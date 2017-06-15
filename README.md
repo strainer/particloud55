@@ -15,4 +15,4 @@ Eventually the particle clouds become distorted into sheets and strings.
 
 ### Link
 For much more developed physics see: 
-[FANCY](http://strainer.github.io/fancy/)
+[strainer/fancy](http://strainer.github.io/fancy/)
