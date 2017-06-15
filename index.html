@@ -1,0 +1,196 @@
+<html>
+<head>
+	<title>particle cloud diddling</title> 
+  <style>
+		body { background-color: black; }
+	</style>
+</head>
+<body>
+  <div id="container"></div>
+	
+	<script src="javascripts/three.js"></script> 
+	<script src="javascripts/Detector.js"></script>
+	<script src="javascripts/tock_ii.js"></script>
+
+<script>
+
+	if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+	var container, stats, geometry;
+	var camera, scene, renderer;
+	var mesh;
+	
+	var keyY=0,keyX=0,keyZ=0,KeyC=0
+	var FrmW //Frame count
+	var framefix=20;
+	var rxw=0,ryw=0,rzw=0 //rotation counters
+	var FrmW=0 //animation frame counter
+	var particles = 40000;
+  var rS;
+ 
+	init();
+	animate();
+
+	function init() {
+		
+		container = document.getElementById( 'container' );
+		camera = new THREE.PerspectiveCamera( 
+		  28, (window.innerWidth-framefix) / (window.innerHeight-framefix), 1, 12000 );
+		camera.position.z = 195;
+
+		scene = new THREE.Scene();
+		//scene.fog = new THREE.Fog( 0x000000, 500, 4500 );
+
+		geometry = new THREE.BufferGeometry()
+
+		geometry.addAttribute( 'position', new Float32Array( particles * 3 ), 3 )
+		geometry.addAttribute( 'color', new Float32Array( particles * 3 ), 3 )
+
+		var P = geometry.getAttribute( 'position' ).array
+		var C = geometry.getAttribute( 'color' ).array
+
+    Tack.initThrees(P,C)
+    Tack.initTacks()
+    Tack.syncTacks()
+		
+		geometry.computeBoundingSphere()
+
+		//
+
+		var material = new THREE.ParticleSystemMaterial( { size: 1, vertexColors: true } )
+
+		particleSystem = new THREE.ParticleSystem( geometry, material )
+		scene.add( particleSystem )
+
+		//
+
+		renderer = new THREE.WebGLRenderer( { antialias: true } )
+		//~ renderer = new THREE.CanvasRenderer( { antialias: true } )
+		renderer.setClearColor( 0x000000, 1 )
+		renderer.setSize( window.innerWidth-framefix, window.innerHeight-framefix )
+
+		container.appendChild( renderer.domElement )
+
+		//
+
+		//stats = new Stats();
+		//stats.domElement.style.position = 'absolute';
+		//stats.domElement.style.top = '0px';
+		//container.appendChild( stats.domElement );
+
+		//
+		window.addEventListener( 'resize', onWindowResize, false )
+		document.addEventListener("keydown",keyDownHandler, false)	
+	  document.addEventListener("keyup",keyUpHandler, false)	
+
+	}
+	
+	function keyDownHandler(event)
+	{
+    switch(event.keyCode)
+		{
+			case 38: keyY= 1 ; break
+			case 40: keyY=-1 ; break
+			case 37: keyX=-1 ; break
+			case 39: keyX= 1 ; break
+			case 65: keyZ=-1 ; break
+			case 90: keyZ= 1 ; break 
+			
+		}
+	}
+
+  function keyUpHandler(event)
+	{
+		switch(event.keyCode)
+		{	case 38: keyY=0 ; break
+			case 40: keyY=0 ; break
+			case 37: keyX=0 ; break
+			case 39: keyX=0 ; break
+			case 65: keyZ=0 ; break
+			case 90: keyZ=0 ; break 
+		}
+	}
+	
+	function onWindowResize() {
+
+		camera.aspect = (window.innerWidth-framefix) / (window.innerHeight-framefix);
+		camera.updateProjectionMatrix();
+
+		renderer.setSize( window.innerWidth-framefix, window.innerHeight-framefix );
+	}
+
+	//
+  function viewscope()
+	{
+		geometry.attributes.color.needsUpdate = true;
+		geometry.attributes.position.needsUpdate = true;
+		
+		if(keyZ==1){ camera.position.z = camera.position.z+(keyZ*5); }
+		if(keyZ==-1){ camera.position.z = camera.position.z+(keyZ*5); }
+		if(keyX==1||keyX==-1){ camera.position.x = camera.position.x-(keyX/2); }
+		if(keyY==1||keyY==-1){ camera.position.y = camera.position.y-(keyY/2); }
+		
+		if(keyX==-1||keyX==1)
+		{ particleSystem.rotation.y = particleSystem.rotation.y +keyX/20; }
+		
+		if(keyY==-1||keyY==1)
+		{ particleSystem.rotation.x = particleSystem.rotation.x -keyY/20; }
+		
+		rxw+=0.01;ryw+=0.02;rzw+=0.01;
+
+		var cammv=Math.sin(FrmW/280);//*0.9+Math.sin(FrmW/100)*1.2+Math.sin(FrmW/100)*1.1
+		var cammv2=Math.sin(FrmW/(280*6));//*0.9+Math.sin(FrmW/100)*1.2+Math.sin(FrmW/100)*1.1
+
+		camera.position.z+=(Math.abs(cammv)*cammv*2.0)-cammv2/22;
+		particleSystem.rotation.y+=Math.pow(Math.sin(FrmW/400),25)/30
+		particleSystem.rotation.x+=Math.pow(Math.sin(FrmW/1600),45)/15
+		
+	}
+	
+	function animate() {
+    
+		requestAnimationFrame( animate);
+    FrmW+=1
+		//if(!(FrmW%8==0)) return;
+		//~ Tack.blasta();
+		//~ Tack.velmove(0.1);
+		//~ Tack.shrink(1);
+		Tack.shrink(0.001);
+		//Tack.shrink2(0.016);
+		
+		Tack.velmove(0.2);
+		
+		Tack.chopWorld();
+		
+		Tack.velcolor(1);  //gamma, brightness
+    
+		Tack.syncTacks();
+		
+		viewscope();
+    //particleSystem.rotation.y+=(0.5+Math.sin(ryw)+Math.sin(ryw/2))/400;
+		
+		render();
+		
+		}
+	
+	function render() {
+  	renderer.render( scene, camera );
+	}
+
+  
+</script>
+
+<!--<audio id="audio" src="res/deepBeep_avator.mp3"></audio>
+<script>
+  document.getElementById('audio').play() //dclid
+</script>-->
+<!--<div>
+  <button onclick="document.getElementById('audio').play()">Play the Audio</button>
+  <button onclick="document.getElementById('audio').pause()">Pause the Audio</button>
+  <button onclick="document.getElementById('audio').volume+=0.1">Increase Volume</button>
+  <button onclick="document.getElementById('audio').volume-=0.1">Decrease Volume</button>
+</div>-->
+
+
+</body> 
+</html>
