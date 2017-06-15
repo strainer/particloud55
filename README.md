@@ -2,7 +2,7 @@
 
 [Web Three.js demo](http://strainer.github.io/particloud55/)
 
-A quick threejs particle cloud excercise.
+A threejs particle cloud excercise.
 * View of cloud automatically spins and zooms.
 * Cloud also expands, contracts, inverts.
 * Particles are very slowly drawn to each other -squeezed by a randomly offest grid generated each frame.
